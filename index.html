@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Campus - Integrated Management Portal</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- QRCode CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="dark-theme">
+
+    <!-- MODULE 15: ROLE-BASED LOGIN OVERLAY SCREEN -->
+    <div class="login-overlay-container" id="loginOverlay">
+        <div class="login-card-glass">
+            <div class="login-header">
+                <i class="fa-solid fa-graduation-cap login-logo-icon"></i>
+                <h2>Smart Campus</h2>
+                <p>Welcome to the A-Grade Academy Portal. Log in to continue.</p>
+            </div>
+            
+            <form id="loginForm" class="standard-form">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-user-shield"></i> Portal Access Role</label>
+                    <select id="loginRole" class="form-select-sm" style="background:#090d16; border:1px solid #1e293b; color:#fff; padding:10px;">
+                        <option value="Admin">Administrator Access</option>
+                        <option value="Faculty">Faculty Portal</option>
+                        <option value="Student">Student Portal</option>
+                        <option value="Parent">Parent View</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" placeholder="e.g. admin" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div id="loginErrorMessage" class="login-error-msg hidden">
+                    <i class="fa-solid fa-circle-exclamation"></i> Invalid credentials entered.
+                </div>
+                <button type="submit" class="btn btn-primary btn-block mt-3">Authenticate Account</button>
+            </form>
+
+            <!-- Quick Demo Credentials Drawer -->
+            <div class="credentials-drawer-box mt-4">
+                <h4><i class="fa-solid fa-key"></i> Demo Credentials Matrix:</h4>
+                <table class="credentials-table">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="cred-row-click" onclick="fillCreds('Admin', 'admin', 'admin123')">
+                            <td>Admin</td>
+                            <td><code>admin</code></td>
+                            <td><code>admin123</code></td>
+                        </tr>
+                        <tr class="cred-row-click" onclick="fillCreds('Faculty', 'faculty', 'faculty123')">
+                            <td>Faculty</td>
+                            <td><code>faculty</code></td>
+                            <td><code>faculty123</code></td>
+                        </tr>
+                        <tr class="cred-row-click" onclick="fillCreds('Student', 'student', 'student123')">
+                            <td>Student</td>
+                            <td><code>student</code></td>
+                            <td><code>student123</code></td>
+                        </tr>
+                        <tr class="cred-row-click" onclick="fillCreds('Parent', 'parent', 'parent123')">
+                            <td>Parent</td>
+                            <td><code>parent</code></td>
+                            <td><code>parent123</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <small class="text-muted text-center block mt-2">Click any row to auto-fill the login form</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="app-container hidden" id="mainAppWrapper">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="logo-text">
+                        <h1>Smart Campus</h1>
+                        <span>A-Grade Academy Portal</span>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <!-- Group 1: General -->
+                <div class="nav-group">
+                    <span class="nav-group-title">Overview</span>
+                    <a href="#dashboard" class="nav-link active" data-tab="dashboard" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-chart-pie"></i> Analytics Dashboard
+                    </a>
+                    <a href="#notices" class="nav-link" data-tab="notices" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-bullhorn"></i> Notice Board
+                    </a>
+                    <a href="#calendar" class="nav-link" data-tab="calendar" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-calendar-days"></i> Academic Calendar
+                    </a>
+                </div>
+
+                <!-- Group 2: People -->
+                <div class="nav-group">
+                    <span class="nav-group-title">Profiles & Staff</span>
+                    <a href="#profiles" class="nav-link" data-tab="profiles" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-user-graduate"></i> Student Profiles
+                    </a>
+                    <a href="#faculty" class="nav-link" data-tab="faculty" data-rbac="Admin,Faculty">
+                        <i class="fa-solid fa-chalkboard-user"></i> Faculty Management
+                    </a>
+                    <a href="#scholarships" class="nav-link" data-tab="scholarships" data-rbac="Admin,Faculty,Student">
+                        <i class="fa-solid fa-award"></i> Scholarships
+                    </a>
+                    <a href="#placements" class="nav-link" data-tab="placements" data-rbac="Admin,Faculty,Student">
+                        <i class="fa-solid fa-briefcase"></i> Placements
+                    </a>
+                </div>
+
+                <!-- Group 3: Academics -->
+                <div class="nav-group">
+                    <span class="nav-group-title">Academics</span>
+                    <a href="#courses" class="nav-link" data-tab="courses" data-rbac="Admin,Faculty,Student">
+                        <i class="fa-solid fa-book-open"></i> Courses & Subjects
+                    </a>
+                    <a href="#attendance" class="nav-link" data-tab="attendance" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-clipboard-user"></i> Attendance Module
+                    </a>
+                    <a href="#exams" class="nav-link" data-tab="exams" data-rbac="Admin,Faculty,Student,Parent">
+                        <i class="fa-solid fa-file-signature"></i> Examinations
+                    </a>
+                </div>
+
+                <!-- Group 4: Administrative -->
+                <div class="nav-group">
+                    <span class="nav-group-title">Administrative</span>
+                    <a href="#fees" class="nav-link" data-tab="fees" data-rbac="Admin,Student,Parent">
+                        <i class="fa-solid fa-credit-card"></i> Fee Management
+                    </a>
+                    <a href="#library" class="nav-link" data-tab="library" data-rbac="Admin,Faculty,Student">
+                        <i class="fa-solid fa-book"></i> Library System
+                    </a>
+                    <a href="#idgenerator" class="nav-link" data-tab="idgenerator" data-rbac="Admin,Student">
+                        <i class="fa-solid fa-id-card"></i> ID Card Generator
+                    </a>
+                    <a href="#reports" class="nav-link" data-tab="reports" data-rbac="Admin">
+                        <i class="fa-solid fa-file-pdf"></i> Reports & Export
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Sidebar User Banner -->
+            <div class="sidebar-user">
+                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%236366f1'/><path d='M50 22a15 15 0 1 0 15 15 15 15 0 0 0-15-15zm0 35c-20 0-35 10-35 22v3h70v-3c0-12-15-22-35-22z' fill='%23ffffff'/></svg>" alt="User Profile" class="user-avatar" id="sidebarUserImg">
+                <div class="user-info">
+                    <span class="user-name" id="sidebarUserName">Ande Pujitha</span>
+                    <span class="user-role badge-admin" id="sidebarUserRole">Administrator</span>
+                </div>
+                <!-- Logout Trigger -->
+                <button class="logout-btn-link ml-auto" id="appLogoutBtn" title="Logout Account">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Navigation Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle-btn"><i class="fa-solid fa-bars"></i></button>
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search students, faculty, files..." id="globalSearch">
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <!-- Notifications Dropdown -->
+                    <div class="header-action-btn notification-dropdown-trigger">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="badge-count">3</span>
+                        <div class="dropdown-panel notification-panel">
+                            <h3>Notifications</h3>
+                            <ul>
+                                <li class="unread">
+                                    <span class="notify-icon fee"><i class="fa-solid fa-wallet"></i></span>
+                                    <div>
+                                        <p>Fee payment reminder sent to 142 students</p>
+                                        <small>5 mins ago</small>
+                                    </div>
+                                </li>
+                                <li class="unread">
+                                    <span class="notify-icon exam"><i class="fa-solid fa-file-lines"></i></span>
+                                    <div>
+                                        <p>Mid-Term exam schedule published successfully</p>
+                                        <small>2 hours ago</small>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="notify-icon system"><i class="fa-solid fa-robot"></i></span>
+                                    <div>
+                                        <p>AI Performance report generated for CSE Dept</p>
+                                        <small>1 day ago</small>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Active Role Indicators (Displays top header role) -->
+                    <div class="header-role-display-indicator">
+                        <span class="status-indicator">
+                            <span class="status-dot green"></span> Mode: <strong id="headerRoleLabelDisplay">Admin</strong>
+                        </span>
+                    </div>
+
+                    <!-- Realtime Date Widget -->
+                    <div class="date-widget">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="currentTimeDisplay">20:15 - Sunday, Jul 5</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Area (Scrolling Grid) -->
+            <div class="content-body">
+                
+                <!-- MODULE 1: ANALYTICS DASHBOARD -->
+                <section id="dashboard-panel" class="tab-panel active">
+                    <div class="panel-header">
+                        <h2>Analytics Dashboard</h2>
+                        <span class="subtitle">Overview of campus status, metrics, and artificial intelligence predictions.</span>
+                    </div>
+
+                    <!-- Analytics Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-indigo"><i class="fa-solid fa-user-graduate"></i></div>
+                            <div class="stat-data">
+                                <h3>Total Students</h3>
+                                <p class="stat-value" id="statTotalStudents">1,420</p>
+                                <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +8.2% this sem</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-purple"><i class="fa-solid fa-book-open"></i></div>
+                            <div class="stat-data">
+                                <h3>Total Courses</h3>
+                                <p class="stat-value" id="statTotalCourses">28</p>
+                                <span class="stat-trend text-muted">Across 5 Departments</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-teal"><i class="fa-solid fa-calendar-check"></i></div>
+                            <div class="stat-data">
+                                <h3>Attendance Rate</h3>
+                                <p class="stat-value" id="statAttendanceRate">89.4%</p>
+                                <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +1.2% this month</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon bg-pink"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                            <div class="stat-data">
+                                <h3>Fees Collected</h3>
+                                <p class="stat-value" id="statFeesCollected">₹41.2L</p>
+                                <span class="stat-trend trend-down"><i class="fa-solid fa-arrow-trend-down"></i> 12% Outstanding</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Panel -->
+                    <div class="dashboard-grid">
+                        <!-- Chart 1: Admissions -->
+                        <div class="grid-card col-6">
+                            <div class="card-header">
+                                <h3>Monthly Admissions</h3>
+                                <span class="badge">2026 Batch</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="admissionsChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart 2: Grade Distributions -->
+                        <div class="grid-card col-6">
+                            <div class="card-header">
+                                <h3>Grade Distribution & Placement Ratios</h3>
+                                <span class="badge">All Depts</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 19: AI INSIGHTS & PREDICTIONS PANEL -->
+                    <div class="panel-header section-divider">
+                        <h2>🤖 AI Predictions & Academic Risk Analysis</h2>
+                        <span class="subtitle">Heuristic predictive modeling for grades, placement success, and attendance drops.</span>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <!-- AI Predictors Card -->
+                        <div class="grid-card col-7">
+                            <div class="card-header">
+                                <h3>AI Academic Performance Prediction</h3>
+                                <button class="btn btn-sm btn-primary" id="recalcAiPredicts"><i class="fa-solid fa-wand-magic-sparkles"></i> Recalculate Predictions</button>
+                            </div>
+                            <div class="ai-predict-container">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Branch</th>
+                                                <th>CGPA</th>
+                                                <th>Attendance</th>
+                                                <th>Projected GPA (AI)</th>
+                                                <th>Placement Odds</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="aiPredictionTableBody">
+                                            <!-- Dynamic via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Student Risk Analysis and Recommendations -->
+                        <div class="grid-card col-5">
+                            <div class="card-header">
+                                <h3>Risk & Recommendation Engine</h3>
+                                <span class="badge bg-danger-soft">4 Students Flagged</span>
+                            </div>
+                            <div class="ai-insights-list" id="aiInsightsContainer">
+                                <!-- Dynamic via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 8: NOTICE BOARD -->
+                <section id="notices-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Notice Board & Announcements</h2>
+                        <span class="subtitle">Latest notifications, circulars, and college updates.</span>
+                    </div>
+                    
+                    <div class="admin-only-action mb-4" data-rbac="Admin">
+                        <button class="btn btn-primary" id="openNewNoticeBtn"><i class="fa-solid fa-plus"></i> Post Announcement</button>
+                    </div>
+
+                    <div class="notice-layout">
+                        <!-- Left pane: notice lists -->
+                        <div class="notice-feed" id="noticeFeedContainer">
+                            <!-- Dynamic notices loaded here -->
+                        </div>
+                        
+                        <!-- Right pane: Post new notice form (Admin only) -->
+                        <div class="grid-card notice-editor-card hidden" id="noticeFormCard">
+                            <div class="card-header">
+                                <h3>Post New announcement</h3>
+                                <button class="btn-icon" id="closeNoticeFormBtn"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <form id="noticeForm" class="standard-form">
+                                <div class="form-group">
+                                    <label>Announcement Title</label>
+                                    <input type="text" id="noticeTitle" required placeholder="e.g. Sem End Practical Schedule">
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Category</label>
+                                        <select id="noticeCategory">
+                                            <option value="exam">Exam Notification</option>
+                                            <option value="holiday">Holiday Notice</option>
+                                            <option value="general">General Announcement</option>
+                                            <option value="placement">Placement Notice</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label>Urgency</label>
+                                        <select id="noticeUrgency">
+                                            <option value="normal">Normal</option>
+                                            <option value="high">High Urgency</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Detailed Message</label>
+                                    <textarea id="noticeContent" rows="6" required placeholder="Describe the announcement details here..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Publish Notice</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 12: ACADEMIC CALENDAR -->
+                <section id="calendar-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Academic Calendar</h2>
+                        <span class="subtitle">Schedules, semester milestones, events, and holiday markers.</span>
+                    </div>
+
+                    <div class="calendar-layout">
+                        <!-- Calendar Widget -->
+                        <div class="grid-card col-8">
+                            <div class="calendar-header-controls">
+                                <button class="btn-icon" id="prevMonthBtn"><i class="fa-solid fa-chevron-left"></i></button>
+                                <h3 id="calendarMonthTitle">July 2026</h3>
+                                <button class="btn-icon" id="nextMonthBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-grid">
+                                <div class="calendar-day-header">Sun</div>
+                                <div class="calendar-day-header">Mon</div>
+                                <div class="calendar-day-header">Tue</div>
+                                <div class="calendar-day-header">Wed</div>
+                                <div class="calendar-day-header">Thu</div>
+                                <div class="calendar-day-header">Fri</div>
+                                <div class="calendar-day-header">Sat</div>
+                                <!-- Days injected here -->
+                                <div class="calendar-days-container" id="calendarDays"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Events List -->
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Upcoming Events</h3>
+                                <button class="btn-icon admin-only-action" data-rbac="Admin" id="addCalendarEventBtn"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                            <div class="calendar-events-list" id="calendarEventsList">
+                                <!-- Dynamic Events -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 2: STUDENT PROFILE MODULE -->
+                <section id="profiles-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Student Directory & Profiles</h2>
+                        <span class="subtitle">Manage academic registration, verify credentials, upload student files, and update parent links.</span>
+                    </div>
+
+                    <div class="student-profile-layout">
+                        <!-- Left pane: Student List & Search -->
+                        <div class="grid-card col-4">
+                            <div class="search-box-container mb-3">
+                                <input type="text" placeholder="Search student by name/ID..." id="studentSearchInput" class="search-input">
+                            </div>
+                            <div class="student-list-container" id="studentListContainer">
+                                <!-- Student cards injected by JS -->
+                            </div>
+                            <button class="btn btn-primary btn-block mt-3 admin-only-action" data-rbac="Admin" id="addNewStudentBtn"><i class="fa-solid fa-user-plus"></i> Register Student</button>
+                        </div>
+
+                        <!-- Right pane: Detailed view & Upload panel -->
+                        <div class="grid-card col-8 student-details-card" id="studentDetailsCard">
+                            <!-- Loaded dynamically. Defaults to edit/view layout -->
+                            <div class="empty-state">
+                                <i class="fa-solid fa-address-card"></i>
+                                <p>Select a student from the list to view profile, documents, and parent details.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 7: FACULTY MANAGEMENT -->
+                <section id="faculty-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Faculty Directory</h2>
+                        <span class="subtitle">Track registrations, allocate subjects, record faculty attendance, and manage salaries.</span>
+                    </div>
+
+                    <div class="faculty-layout">
+                        <!-- Left Column: Faculty Search & list -->
+                        <div class="grid-card col-4">
+                            <div class="search-box-container mb-3">
+                                <input type="text" placeholder="Filter faculty..." id="facultySearchInput" class="search-input">
+                            </div>
+                            <div class="faculty-list" id="facultyListContainer">
+                                <!-- Faculty lists via JS -->
+                            </div>
+                            <button class="btn btn-primary btn-block mt-3 admin-only-action" data-rbac="Admin" id="addFacultyBtn"><i class="fa-solid fa-user-plus"></i> Register Faculty</button>
+                        </div>
+                        
+                        <!-- Right Column: Faculty Details and Salary -->
+                        <div class="grid-card col-8" id="facultyDetailsContainer">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                                <p>Select a faculty member to see allocations, attendance log, and salary reports.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 18: SCHOLARSHIP MANAGEMENT -->
+                <section id="scholarships-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Scholarship Management</h2>
+                        <span class="subtitle">Track tuition aid applications, verify criteria, and approve academic awards.</span>
+                    </div>
+
+                    <div class="scholarship-layout">
+                        <div class="grid-card col-8">
+                            <div class="card-header">
+                                <h3>Active Applications</h3>
+                                <span class="badge bg-teal" id="scholarshipPendingCount">3 Pending</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Applicant</th>
+                                            <th>Scholarship Name</th>
+                                            <th>CGPA Required</th>
+                                            <th>Student CGPA</th>
+                                            <th>Status</th>
+                                            <th class="actions-col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scholarshipTableBody">
+                                        <!-- Injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Apply for Scholarship Card (Student mode) -->
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Apply / Create Scheme</h3>
+                            </div>
+                            <!-- Form content changes based on current role -->
+                            <div id="scholarshipActionBox">
+                                <!-- Injected dynamically by app.js based on role (Admin vs Student) -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 14: PLACEMENT MODULE -->
+                <section id="placements-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Placement Portal</h2>
+                        <span class="subtitle">Company drives, student eligibility analysis, schedules, and recruitment statistics.</span>
+                    </div>
+
+                    <div class="placement-layout">
+                        <div class="grid-card col-8">
+                            <div class="card-header">
+                                <h3>Active Recruitment Drives</h3>
+                                <button class="btn btn-sm btn-primary admin-only-action" data-rbac="Admin" id="addDriveBtn"><i class="fa-solid fa-plus"></i> Add Company</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Company</th>
+                                            <th>Role</th>
+                                            <th>Min CGPA</th>
+                                            <th>Package</th>
+                                            <th>Interview Date</th>
+                                            <th>Registered</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="placementDrivesTableBody">
+                                        <!-- Injected dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Eligibility Checklist (Student Mode)</h3>
+                            </div>
+                            <div class="placement-checklist" id="placementEligibilityBox">
+                                <!-- Dynamic user stats -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 6: COURSE MANAGEMENT -->
+                <section id="courses-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Course & Subject Management</h2>
+                        <span class="subtitle">Configure college departments, curriculum structure, duration, and faculty allocations.</span>
+                    </div>
+
+                    <div class="admin-only-action mb-4" data-rbac="Admin">
+                        <button class="btn btn-primary" id="addNewCourseBtn"><i class="fa-solid fa-plus"></i> Add New Course</button>
+                    </div>
+
+                    <div class="courses-grid" id="coursesGridContainer">
+                        <!-- Dynamic Course Cards -->
+                    </div>
+
+                    <!-- New Course Dialog (Card) -->
+                    <div class="grid-card col-6 modal-style-card hidden" id="courseFormCard">
+                        <div class="card-header">
+                            <h3 id="courseFormTitle">Create New Course</h3>
+                            <button class="btn-icon" id="closeCourseFormBtn"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <form id="courseForm" class="standard-form">
+                            <div class="form-group">
+                                <label>Course Code & Name</label>
+                                <input type="text" id="courseName" required placeholder="e.g. CS-201 Data Structures">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-6">
+                                    <label>Duration (Semesters)</label>
+                                    <input type="number" id="courseDuration" min="1" max="10" required value="8">
+                                </div>
+                                <div class="form-group col-6">
+                                    <label>Assign Primary Faculty</label>
+                                    <select id="courseFaculty">
+                                        <!-- Filled via faculty list -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Syllabus & Core Subjects (Comma separated)</label>
+                                <input type="text" id="courseSubjects" placeholder="Array Structures, Linked Lists, Trees, Graphs">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Register Course</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- MODULE 3: ATTENDANCE MANAGEMENT + MODULE 16: QR CODE ATTENDANCE -->
+                <section id="attendance-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Attendance Management & QR Scanner</h2>
+                        <span class="subtitle">Process daily attendance, access monthly logs, inspect absent student lists, and perform QR validation scans.</span>
+                    </div>
+
+                    <div class="attendance-layout">
+                        <!-- Tab controls for Attendance mode -->
+                        <div class="grid-card col-12 mb-4">
+                            <div class="tabs-subnav">
+                                <button class="btn-tab active" data-subtab="daily-attendance">Daily Attendance Log</button>
+                                <button class="btn-tab" data-subtab="monthly-reports">Monthly Attendance Reports</button>
+                                <button class="btn-tab" data-subtab="qr-attendance">QR Code Scanner (Instant)</button>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 1: Daily Log -->
+                        <div class="subtab-panel col-12 active" id="subpanel-daily-attendance">
+                            <div class="grid-row">
+                                <div class="grid-card col-8">
+                                    <div class="card-header">
+                                        <h3>Class Register</h3>
+                                        <div class="header-filters">
+                                            <select id="attendanceSelectCourse" class="form-select-sm">
+                                                <!-- Dynamic Course Options -->
+                                            </select>
+                                            <input type="date" id="attendanceDate" class="form-select-sm">
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Student ID</th>
+                                                    <th>Student Name</th>
+                                                    <th>Attendance Status</th>
+                                                    <th>Last Logged</th>
+                                                    <th class="faculty-only-action admin-only-action" data-rbac="Admin,Faculty">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dailyAttendanceTableBody">
+                                                <!-- Dynamic list -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="grid-card col-4">
+                                    <div class="card-header">
+                                        <h3>Absentee Notification Dashboard</h3>
+                                    </div>
+                                    <div class="absentee-list" id="absenteeListContainer">
+                                        <!-- List of absent students with direct action (SMS / Email) -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 2: Monthly Reports -->
+                        <div class="subtab-panel col-12" id="subpanel-monthly-reports">
+                            <div class="grid-card col-12">
+                                <div class="card-header">
+                                    <h3>Student Monthly Attendance Trends (%)</h3>
+                                    <button class="btn btn-sm btn-secondary" id="exportAttendanceCsv"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Total Classes</th>
+                                                <th>Attended</th>
+                                                <th>Absent</th>
+                                                <th>Percentage</th>
+                                                <th>Status Alert</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="monthlyAttendanceReportTable">
+                                            <!-- Dynamic report lists -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 3: QR Code scanner -->
+                        <div class="subtab-panel col-12" id="subpanel-qr-attendance">
+                            <div class="grid-row">
+                                <!-- Student Mode: Show QR Code to scan -->
+                                <div class="grid-card col-6" id="qrStudentPanel">
+                                    <div class="card-header">
+                                        <h3>Your Digital Attendance Pass</h3>
+                                    </div>
+                                    <div class="qr-code-generation-box">
+                                        <p class="mb-3 text-muted text-center">Present this QR Code to the classroom terminal or faculty to record your attendance.</p>
+                                        <div class="qr-canvas-holder" id="attendanceQrCodeHolder">
+                                            <!-- QR code library renders here or SVG fallback -->
+                                        </div>
+                                        <div class="student-qr-info mt-3 text-center">
+                                            <h4 id="studentQrName">Loading...</h4>
+                                            <span class="badge" id="studentQrId">ID: Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Admin/Faculty Mode: Scanner Terminal -->
+                                <div class="grid-card col-6" id="qrScannerPanel">
+                                    <div class="card-header">
+                                        <h3>Classroom QR Scan Terminal</h3>
+                                        <span class="pulse-icon"><i class="fa-solid fa-circle"></i> Live Terminal</span>
+                                    </div>
+                                    <div class="qr-scanner-window">
+                                        <!-- Webcam placeholder with animation scanner line -->
+                                        <div class="webcam-overlay" id="webcamOverlay">
+                                            <div class="scanning-laser"></div>
+                                            <div class="scan-target-box"></div>
+                                            <video id="scannerVideo" class="hidden" autoplay playsinline></video>
+                                            <div class="scanner-fallback-message" id="scannerFallback">
+                                                <i class="fa-solid fa-camera"></i>
+                                                <p>Allow Webcam access or click "Simulate Instant Scan" to record classroom attendance.</p>
+                                            </div>
+                                        </div>
+                                        <div class="scanner-controls mt-3">
+                                            <button class="btn btn-primary" id="toggleWebcamBtn"><i class="fa-solid fa-video"></i> Start Webcam</button>
+                                            <button class="btn btn-accent" id="simulateQrScanBtn"><i class="fa-solid fa-qrcode"></i> Simulate Instant Scan</button>
+                                        </div>
+                                        <div class="scan-log-box mt-3" id="scanLogBox">
+                                            <small class="text-muted">Terminal ready. Waiting for scan...</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 4: EXAMINATION MODULE -->
+                <section id="exams-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Examination & Assessments</h2>
+                        <span class="subtitle">Manage examination schedules, enter grades, generate hall tickets, and calculate results.</span>
+                    </div>
+
+                    <div class="exam-layout">
+                        <!-- Sub navigation -->
+                        <div class="grid-card col-12 mb-4">
+                            <div class="tabs-subnav">
+                                <button class="btn-tab active" data-subtab="exam-schedule">Exam Schedules</button>
+                                <button class="btn-tab" data-subtab="marks-entry">Marks Entry</button>
+                                <button class="btn-tab" data-subtab="hall-tickets">Hall Ticket Generator</button>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 1: Exam Schedules -->
+                        <div class="subtab-panel col-12 active" id="subpanel-exam-schedule">
+                            <div class="grid-card col-12">
+                                <div class="card-header">
+                                    <h3>Academic Exam Calendars</h3>
+                                    <button class="btn btn-sm btn-primary admin-only-action" data-rbac="Admin" id="addExamScheduleBtn"><i class="fa-solid fa-plus"></i> Schedule Exam</button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Course Code</th>
+                                                <th>Subject</th>
+                                                <th>Exam Type</th>
+                                                <th>Date & Time</th>
+                                                <th>Duration</th>
+                                                <th>Room</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="examScheduleTableBody">
+                                            <!-- Dynamic via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 2: Marks Entry -->
+                        <div class="subtab-panel col-12" id="subpanel-marks-entry">
+                            <div class="grid-card col-12">
+                                <div class="card-header">
+                                    <h3>Faculty Grading Console</h3>
+                                    <div class="header-filters">
+                                        <select id="marksEntryCourse" class="form-select-sm">
+                                            <!-- Dynamically filled -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <th>Student Name</th>
+                                                <th>Exam Type</th>
+                                                <th>Total Marks (100)</th>
+                                                <th>Grade Assigned</th>
+                                                <th class="faculty-only-action admin-only-action" data-rbac="Admin,Faculty">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="marksEntryTableBody">
+                                            <!-- Dynamic grading items -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subtab 3: Hall Tickets -->
+                        <div class="subtab-panel col-12" id="subpanel-hall-tickets">
+                            <div class="grid-row">
+                                <div class="grid-card col-4">
+                                    <div class="card-header">
+                                        <h3>Select Student</h3>
+                                    </div>
+                                    <div class="student-hall-ticket-selection" id="hallTicketStudentList">
+                                        <!-- List of students to select for printing hall tickets -->
+                                    </div>
+                                </div>
+                                <div class="grid-card col-8">
+                                    <div class="card-header">
+                                        <h3>Hall Ticket Preview</h3>
+                                        <button class="btn btn-sm btn-primary" id="printHallTicketBtn"><i class="fa-solid fa-print"></i> Print Hall Ticket</button>
+                                    </div>
+                                    <div class="hall-ticket-paper-wrapper" id="hallTicketPrintArea">
+                                        <!-- Renders premium Hall ticket view -->
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-ticket"></i>
+                                            <p>Select a student to generate and preview their official examination hall ticket.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 5: FEE MANAGEMENT -->
+                <section id="fees-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Tuition & Fee Management</h2>
+                        <span class="subtitle">Oversee collection records, track outstanding pending fees, verify payment gates, and print official fee receipts.</span>
+                    </div>
+
+                    <div class="fees-layout">
+                        <!-- Stats bar -->
+                        <div class="grid-card col-12 mb-4">
+                            <div class="fees-overview-ribbon">
+                                <div class="ribbon-item">
+                                    <small>Total Expected</small>
+                                    <strong id="feeExpected">₹5,80,000</strong>
+                                </div>
+                                <div class="ribbon-item divider"></div>
+                                <div class="ribbon-item">
+                                    <small>Total Collected</small>
+                                    <strong id="feeCollected" class="text-teal">₹5,10,400</strong>
+                                </div>
+                                <div class="ribbon-item divider"></div>
+                                <div class="ribbon-item">
+                                    <small>Pending Dues</small>
+                                    <strong id="feePending" class="text-pink">₹69,600</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed lists -->
+                        <div class="grid-row">
+                            <div class="grid-card col-8">
+                                <div class="card-header">
+                                    <h3>Fee Records Log</h3>
+                                    <div class="header-filters">
+                                        <select id="feeStatusFilter" class="form-select-sm">
+                                            <option value="all">All Transactions</option>
+                                            <option value="Paid">Paid Only</option>
+                                            <option value="Pending">Pending Dues</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Ref No</th>
+                                                <th>Student</th>
+                                                <th>Term / Description</th>
+                                                <th>Amount</th>
+                                                <th>Due Date</th>
+                                                <th>Payment Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="feeTransactionsTableBody">
+                                            <!-- Dynamic transactions -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Online Gateway / Record Payment Console -->
+                            <div class="grid-card col-4">
+                                <div class="card-header">
+                                    <h3>Payment Console</h3>
+                                </div>
+                                <div class="fee-payment-console" id="feePaymentConsole">
+                                    <!-- Dynamic layout based on Role -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 13: LIBRARY MANAGEMENT -->
+                <section id="library-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Library Catalog System</h2>
+                        <span class="subtitle">Search available books, check issue parameters, track return dates, and calculate overdue fines.</span>
+                    </div>
+
+                    <div class="library-layout">
+                        <!-- Left pane: Catalog Search & Issue form -->
+                        <div class="grid-card col-8">
+                            <div class="card-header">
+                                <h3>Book Catalog</h3>
+                                <div class="header-filters flex-fill max-w-lg ml-3">
+                                    <input type="text" placeholder="Search by title, author, ISBN..." id="bookSearchInput" class="search-input">
+                                </div>
+                                <button class="btn btn-sm btn-primary admin-only-action ml-2" data-rbac="Admin" id="addBookBtn"><i class="fa-solid fa-plus"></i> Add Book</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ISBN</th>
+                                            <th>Book Title</th>
+                                            <th>Author</th>
+                                            <th>Available Count</th>
+                                            <th>Shelf Location</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="libraryBooksTableBody">
+                                        <!-- Dynamic library lists -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right Pane: Issue log & checkin logic -->
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Issue & Return Console</h3>
+                            </div>
+                            <div class="library-console-box" id="libraryConsoleBox">
+                                <!-- Custom dynamic console details -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 17: ID CARD GENERATOR -->
+                <section id="idgenerator-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Student ID Card Generator</h2>
+                        <span class="subtitle">Compose digital identity passes with personalized QR headers and instant download options.</span>
+                    </div>
+
+                    <div class="idgenerator-layout">
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Select Student Details</h3>
+                            </div>
+                            <div class="student-id-selection-list" id="idCardStudentList">
+                                <!-- List of student templates -->
+                            </div>
+                        </div>
+
+                        <div class="grid-card col-8 flex-center">
+                            <div class="card-header width-full">
+                                <h3>Generated ID Pass Preview</h3>
+                                <button class="btn btn-sm btn-primary" id="printIdCardBtn"><i class="fa-solid fa-print"></i> Print ID Card</button>
+                            </div>
+                            
+                            <!-- ID Card Visual -->
+                            <div class="id-card-display-wrapper">
+                                <div class="id-card-frame" id="idCardFrame">
+                                    <div class="id-card-header">
+                                        <i class="fa-solid fa-graduation-cap font-large"></i>
+                                        <div>
+                                            <h3>SMART CAMPUS</h3>
+                                            <p>Official Digital Identity Pass</p>
+                                        </div>
+                                    </div>
+                                    <div class="id-card-body">
+                                        <div class="id-card-profile-pic">
+                                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%232bbfa3'/><path d='M50 22a15 15 0 1 0 15 15 15 15 0 0 0-15-15zm0 35c-20 0-35 10-35 22v3h70v-3c0-12-15-22-35-22z' fill='%23ffffff'/></svg>" alt="ID Profile" id="idPreviewImage">
+                                        </div>
+                                        <div class="id-card-details">
+                                            <h2 id="idPreviewName">Aarav Sharma</h2>
+                                            <p class="id-preview-code">ID No: <span id="idPreviewCode">SC-2026-CSE01</span></p>
+                                            <table class="id-details-table">
+                                                <tr>
+                                                    <td>Department:</td>
+                                                    <td id="idPreviewDept">Computer Science Eng</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Validity:</td>
+                                                    <td id="idPreviewExp">2024 - 2028</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Blood Group:</td>
+                                                    <td>O +ve</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="id-card-qr-box">
+                                            <div id="idCardQrDisplay"></div>
+                                            <small class="scan-tag">STUDENT SCAN</small>
+                                        </div>
+                                    </div>
+                                    <div class="id-card-footer">
+                                        <p>If found, please return to Admin Block. Security helpline: +91 99000 12345</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 9: REPORT GENERATION + MODULE 20: EXPORT MODULE -->
+                <section id="reports-panel" class="tab-panel">
+                    <div class="panel-header">
+                        <h2>Report Generator & Export Console</h2>
+                        <span class="subtitle">Extract system metrics, compiled marks files, and attendance charts to PDF or Excel formats.</span>
+                    </div>
+
+                    <div class="reports-layout-grid">
+                        <div class="grid-card col-4">
+                            <div class="card-header">
+                                <h3>Download Preset Reports</h3>
+                            </div>
+                            <div class="report-generator-selections">
+                                <div class="report-preset-card">
+                                    <div class="icon"><i class="fa-solid fa-file-lines text-indigo"></i></div>
+                                    <div class="text">
+                                        <h4>Full Student Roster</h4>
+                                        <p>CSV / PDF Roster containing details, parent contacts, and CGPA stats.</p>
+                                    </div>
+                                    <div class="actions">
+                                        <button class="btn btn-sm btn-secondary" onclick="exportFullStudentRoster('csv')">CSV</button>
+                                        <button class="btn btn-sm btn-primary" onclick="exportFullStudentRoster('pdf')">PDF</button>
+                                    </div>
+                                </div>
+
+                                <div class="report-preset-card">
+                                    <div class="icon"><i class="fa-solid fa-clipboard-user text-teal"></i></div>
+                                    <div class="text">
+                                        <h4>Academic Attendance Summary</h4>
+                                        <p>Monthly percentage stats for all enrolled courses.</p>
+                                    </div>
+                                    <div class="actions">
+                                        <button class="btn btn-sm btn-secondary" onclick="exportAttendanceSummary('csv')">CSV</button>
+                                        <button class="btn btn-sm btn-primary" onclick="exportAttendanceSummary('pdf')">PDF</button>
+                                    </div>
+                                </div>
+
+                                <div class="report-preset-card">
+                                    <div class="icon"><i class="fa-solid fa-medal text-pink"></i></div>
+                                    <div class="text">
+                                        <h4>Marks & Grade Spreadsheets</h4>
+                                        <p>Summary of midterm and semester end outcomes.</p>
+                                    </div>
+                                    <div class="actions">
+                                        <button class="btn btn-sm btn-secondary" onclick="exportMarksReport('csv')">CSV</button>
+                                        <button class="btn btn-sm btn-primary" onclick="exportMarksReport('pdf')">PDF</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live SQL / Custom Report Filter builder -->
+                        <div class="grid-card col-8">
+                            <div class="card-header">
+                                <h3>Custom Report Query Builder</h3>
+                            </div>
+                            <div class="query-builder-form">
+                                <form id="reportQueryBuilder" class="standard-form">
+                                    <div class="form-row">
+                                        <div class="form-group col-4">
+                                            <label>Select Category</label>
+                                            <select id="reportQueryCategory">
+                                                <option value="students">Students Database</option>
+                                                <option value="courses">Course Syllabus</option>
+                                                <option value="attendance">Attendance Register</option>
+                                                <option value="library">Library Logs</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label>Filters (Field)</label>
+                                            <select id="reportQueryFilterField">
+                                                <option value="all">All Fields</option>
+                                                <option value="cgpa">CGPA Threshold</option>
+                                                <option value="attendance">Attendance &lt; 75%</option>
+                                                <option value="fees">Unpaid Dues</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label>Limit Records</label>
+                                            <input type="number" id="reportQueryLimit" value="50" min="5">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-accent btn-block"><i class="fa-solid fa-filter"></i> Run Custom Query & Print</button>
+                                </form>
+                                <div class="table-responsive mt-3" style="max-height: 350px;">
+                                    <table class="data-table" id="customQueryOutputTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Result Row</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-center text-muted">Run custom query parameters above to view live reports logs.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODULE 11: AI CHATBOT (FLOATING OVERLAY) -->
+    <div class="ai-chatbot-widget" id="aiChatbotWidget">
+        <button class="chatbot-trigger" id="chatbotTriggerBtn">
+            <i class="fa-solid fa-robot"></i>
+            <span class="online-indicator"></span>
+        </button>
+        <div class="chatbot-window hidden" id="chatbotWindow">
+            <div class="chatbot-header">
+                <div class="bot-info">
+                    <i class="fa-solid fa-robot"></i>
+                    <div>
+                        <h4>Campus Companion</h4>
+                        <span>AI Assistant Online</span>
+                    </div>
+                </div>
+                <button class="btn-icon text-white" id="closeChatbotBtn"><i class="fa-solid fa-minus"></i></button>
+            </div>
+            
+            <div class="chatbot-messages" id="chatbotMessagesContainer">
+                <div class="bot-msg">
+                    <p>Hello! I am your AI Campus Companion. How can I help you today? Ask me about:
+                        <ul>
+                            <li>Admission Information</li>
+                            <li>Course Syllabus</li>
+                            <li>Library book availability</li>
+                            <li>Placement eligibility check</li>
+                            <li>Pending fees details</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+
+            <div class="chatbot-input-area">
+                <input type="text" id="chatbotInput" placeholder="Ask anything about campus...">
+                <button id="chatbotSendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification system for Email & SMS alert simulation (Module 10) -->
+    <div class="sms-email-notification-toast-container" id="toastContainer"></div>
+
+    <!-- Main scripts -->
+    <script src="modules.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+    <script>
+        // Inline credentials clicker helper function
+        function fillCreds(role, u, p) {
+            document.getElementById('loginRole').value = role;
+            document.getElementById('loginUsername').value = u;
+            document.getElementById('loginPassword').value = p;
+        }
+    </script>
+</body>
+</html>
