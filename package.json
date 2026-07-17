@@ -17,6 +17,8 @@
     "express": "^5.2.1",
     "mammoth": "^1.12.0",
     "mysql2": "^3.22.5",
-    "puppeteer": "^25.3.0"
+    "pptxgenjs": "^4.0.1",
+    "puppeteer": "^25.3.0",
+    "sqlite3": "^6.0.1"
   }
 }
